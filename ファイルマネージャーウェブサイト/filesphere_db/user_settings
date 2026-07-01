@@ -1,0 +1,17 @@
+CREATE TABLE user_settings (
+
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    user_id INT UNIQUE,
+
+    dark_mode BOOLEAN DEFAULT FALSE,
+
+    view_mode ENUM('grid','list') DEFAULT 'grid',
+
+    language VARCHAR(10) DEFAULT 'ja',
+
+    FOREIGN KEY(user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+
+);

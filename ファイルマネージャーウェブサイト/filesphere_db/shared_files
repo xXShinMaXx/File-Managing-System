@@ -1,0 +1,27 @@
+CREATE TABLE shared_files (
+
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    file_id INT,
+
+    owner_id INT,
+
+    shared_with INT,
+
+    permission ENUM('viewer','editor') DEFAULT 'viewer',
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY(file_id)
+        REFERENCES files(id)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY(owner_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY(shared_with)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+
+);
