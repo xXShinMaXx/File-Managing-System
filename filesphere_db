@@ -1,0 +1,2 @@
+CREATE DATABASE filesphere_db;
+USE filesphere_db;
