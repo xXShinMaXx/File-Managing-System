@@ -6,28 +6,11 @@ if (!isset($_SESSION['username'])) {
     exit("Unauthorized");
 }
 
-$username = $_SESSION['username'];
-
 $uploadDir = "uploads/";
-$jsonFile = "files.json";
 
 if (!file_exists($uploadDir)) {
     mkdir($uploadDir, 0755, true);
 }
-
-/* Load Metadata */
-
-$metadata = [];
-
-if (file_exists($jsonFile)) {
-    $metadata = json_decode(file_get_contents($jsonFile), true);
-
-    if (!is_array($metadata)) {
-        $metadata = [];
-    }
-}
-
-/* Allowed File Types */
 
 $allowed = [
     "jpg","jpeg","png","gif","webp",
@@ -50,9 +33,7 @@ if (!isset($_FILES['uploaded_file'])) {
 }
 
 /*
-----------------------------------------
-Convert SINGLE upload into MULTIPLE format
-----------------------------------------
+Convert single upload into multiple upload format
 */
 
 $fileNames = $_FILES['uploaded_file']['name'];
@@ -71,8 +52,6 @@ if (!is_array($fileNames)) {
     $errors   = $_FILES['uploaded_file']['error'];
 
 }
-
-/* Upload Files */
 
 foreach ($fileNames as $i => $originalName) {
 
@@ -99,33 +78,12 @@ foreach ($fileNames as $i => $originalName) {
     $destination = $uploadDir . $filename;
 
     if (file_exists($destination)) {
-
         $filename = time() . "_" . $filename;
-
         $destination = $uploadDir . $filename;
-
     }
 
-    if (move_uploaded_file($tmpNames[$i], $destination)) {
-
-        $metadata[$filename] = [
-
-            "uploader" => $username,
-
-            "date" => date("Y-m-d H:i:s"),
-
-            "size" => filesize($destination)
-
-        ];
-
-    }
-
+    move_uploaded_file($tmpNames[$i], $destination);
 }
-
-file_put_contents(
-    $jsonFile,
-    json_encode($metadata, JSON_PRETTY_PRINT)
-);
 
 echo "success";
 ?>

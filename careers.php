@@ -12,6 +12,7 @@ $username = $isLoggedIn ? $_SESSION['username'] : '';
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FileSphere</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="careers.css">
   <script src="https://kit.fontawesome.com/db86999413.js" crossorigin="anonymous"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,7 +36,7 @@ $username = $isLoggedIn ? $_SESSION['username'] : '';
           <a href="cprofile.php" class="navbar__links">会社概要</a>
         </li>
         <li class="navbar__item">
-          <a href="careers.php" class="navbar__links">採用情報</a>
+          <a href="careers.php" class="navbar__links">システムの使い方</a>
         </li>
         <?php if ($isLoggedIn): ?>
           <li class="navbar__item">
@@ -75,16 +76,15 @@ $username = $isLoggedIn ? $_SESSION['username'] : '';
     <div class="careers__hero">
 
         <p class="careers__tag">
-            採用情報
+            システムの使い方
         </p>
 
         <h1>
-            一緒に未来を創りましょう。
+           FileSphereでファイルを簡単・安全に管理できます。
         </h1>
 
         <p class="careers__subtitle">
-            私たちと一緒に未来を創りませんか。
-            新しい挑戦を歓迎し、一人ひとりが成長できる環境を提供します。
+            私たちのファイル管理システムで、ファイルをより安全・簡単・効率的に管理しませんか。FileSphereは、アップロード、整理、共有、ダウンロードを一つのプラットフォームで実現します。
         </p>
 
     </div>
@@ -93,19 +93,19 @@ $username = $isLoggedIn ? $_SESSION['username'] : '';
 
         <div class="career__card">
 
-            <h2>ソフトウェアエンジニア</h2>
+            <h2>ファイルアップロード</h2>
 
             <p>
-                Webシステム・AI・クラウドサービスの開発を担当します。
+                ドラッグ＆ドロップまたはボタンから簡単にアップロードできます。
             </p>
 
             <ul>
-                <li>正社員</li>
-                <li>東京都</li>
-                <li>経験者歓迎</li>
+                <li>ファイル検索 | 名前で瞬時に検索できます。</li>
+                <li>ダウンロード | 必要なファイルをいつでもダウンロードできます。</li>
+                <li>削除 | 不要なファイルを安全に削除できます。</li>
             </ul>
 
-            <a href="contact.php">
+            <a href="filemanager.php">
                 詳細を見る →
             </a>
 
@@ -113,20 +113,19 @@ $username = $isLoggedIn ? $_SESSION['username'] : '';
 
         <div class="career__card">
 
-            <h2>UI / UX デザイナー</h2>
+            <h2>ご利用ガイド</h2>
 
             <p>
-                ユーザー中心のデザインを通じて
-                新しいデジタル体験を創造します。
+                ログインします。
             </p>
 
             <ul>
-                <li>正社員</li>
-                <li>リモート可</li>
-                <li>デザイン経験歓迎</li>
+                <li>「New」をクリックします。</li>
+                <li>ファイルをアップロードします。</li>
+                <li>検索・ダウンロード・削除できます。</li>
             </ul>
 
-            <a href="contact.php">
+            <a href="filemanager.php">
                 詳細を見る →
             </a>
 
@@ -134,20 +133,19 @@ $username = $isLoggedIn ? $_SESSION['username'] : '';
 
         <div class="career__card">
 
-            <h2>サイバーセキュリティエンジニア</h2>
+            <h2>FAQ</h2>
 
             <p>
-                ネットワークやシステムの安全性を守る
-                セキュリティ業務を担当します。
+                よくある質問
             </p>
 
             <ul>
-                <li>正社員</li>
-                <li>東京都</li>
-                <li>資格保有者歓迎</li>
+                <li> Q ファイルサイズの上限は？ A 20MBまでアップロードできます。</li>
+                <li> Q 複数アップロードできますか？ A はい、対応しています。</li>
+                <li> Q 削除したファイルは復元できますか？ A 現在は完全削除されます。</li>
             </ul>
 
-            <a href="contact.php">
+            <a href="filemanager.php">
                 詳細を見る →
             </a>
 

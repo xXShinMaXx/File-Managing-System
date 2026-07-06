@@ -35,7 +35,7 @@ $username = $isLoggedIn ? $_SESSION['username'] : '';
           <a href="cprofile.php" class="navbar__links">会社概要</a>
         </li>
         <li class="navbar__item">
-          <a href="careers.php" class="navbar__links">採用情報</a>
+          <a href="careers.php" class="navbar__links">システムの使い方</a>
         </li>
         <?php if ($isLoggedIn): ?>
           <li class="navbar__item">

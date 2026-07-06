@@ -117,7 +117,7 @@ class="navbar__links">
 <li class="navbar__item">
 <a href="careers.php"
 class="navbar__links">
-採用情報
+システムの使い方
 </a>
 </li>
     
@@ -285,10 +285,10 @@ UPLOAD FORM
     <input
         type="file"
         id="fileInput"
-        name="uploaded_file"
+        name="uploaded_file[]"
         multiple
-        hidden
-        onchange="uploadFiles(this.files)">
+        hidden>
+      
 
 </form>
 
@@ -330,10 +330,7 @@ if(count($files) == 0){
 
         $size = round(filesize($filePath)/1024,2) . " KB";
 
-        $uploader = $metadata[$file]['uploader'] ?? "Unknown";
-
-        $date = $metadata[$file]['date'] ??
-                date("Y-m-d H:i", filemtime($filePath));
+		$date = date("Y-m-d H:i", filemtime($filePath));
 
         /* File Extension */
 
@@ -419,19 +416,8 @@ if(count($files) == 0){
 </h3>
 
 <p>
-
-<i class="fa-solid fa-user"></i>
-
-<?php echo htmlspecialchars($uploader); ?>
-
-</p>
-
-<p>
-
 <i class="fa-solid fa-calendar"></i>
-
-<?php echo $date; ?>
-
+<?php echo date("Y-m-d H:i", filemtime($filePath)); ?>
 </p>
 
 <p>
@@ -491,8 +477,6 @@ LIST VIEW
 
 <th>File Name</th>
 
-<th>Uploader</th>
-
 <th>Size</th>
 
 <th>Last Modified</th>
@@ -515,8 +499,6 @@ foreach($files as $file){
 
     $size = round(filesize($filePath)/1024,2)." KB";
 
-    $uploader = $metadata[$file]['uploader'] ?? "Unknown";
-
     $date = $metadata[$file]['date'] ??
             date("Y-m-d H:i", filemtime($filePath));
 
@@ -529,12 +511,6 @@ foreach($files as $file){
 <i class="fa-regular fa-file"></i>
 
 <?php echo htmlspecialchars($file); ?>
-
-</td>
-
-<td>
-
-<?php echo htmlspecialchars($uploader); ?>
 
 </td>
 
@@ -565,7 +541,7 @@ Download
 <a
 href="delete.php?file=<?php echo urlencode($file); ?>"
 class="btn-delete"
-onclick="return confirm('Delete this file?');">
+onclick="return confirm('このファイルを削除しますか？?');">
 
 <i class="fa-solid fa-trash"></i>
 
