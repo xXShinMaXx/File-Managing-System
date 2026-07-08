@@ -23,20 +23,27 @@ if (!file_exists($uploadDir)) {
 }
 
 /* ===========================
-   Metadata
-=========================== */
-
-$metadata = [];
-
-if(file_exists("files.json")){
-    $metadata = json_decode(file_get_contents("files.json"), true);
-}
-
-/* ===========================
    Read Files
 =========================== */
 
-$files = array_diff(scandir($uploadDir), ['.','..']);
+include "database.php";
+
+$stmt = mysqli_prepare(
+    $conn,
+    "SELECT * FROM files
+     WHERE owner = ?
+     ORDER BY upload_date DESC"
+);
+
+mysqli_stmt_bind_param(
+    $stmt,
+    "s",
+    $username
+);
+
+mysqli_stmt_execute($stmt);
+
+$result = mysqli_stmt_get_result($stmt);
 ?>
 
 <!DOCTYPE html>
@@ -45,530 +52,579 @@ $files = array_diff(scandir($uploadDir), ['.','..']);
 
 <head>
 
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>File Manager | FileSphere</title>
+    <title>File Manager | FileSphere</title>
 
-<link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="filemanager.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="filemanager.css">
 
-<link rel="preconnect"
-href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
 
-<link rel="preconnect"
-href="https://fonts.gstatic.com"
-crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-<link href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@300;400;500;600;700&display=swap"
-rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
 
-<script src="https://kit.fontawesome.com/db86999413.js"
-crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/db86999413.js" crossorigin="anonymous"></script>
 
 </head>
 
 <body>
 
-<!-- ===========================
+    <!-- ===========================
 NAVIGATION BAR
 =========================== -->
 
-<nav class="navbar">
+    <nav class="navbar">
 
-<div class="navbar__container">
+        <div class="navbar__container">
 
-<a href="index.php" id="navbar__logo">
+            <a href="index.php" id="navbar__logo">
 
-<i class="fa-solid fa-file"
-style="color:#42b5f2;"></i>
+                <i class="fa-solid fa-file" style="color:#42b5f2;"></i>
 
-FileSphere
+                FileSphere
 
-</a>
+            </a>
 
-<div class="navbar__toggle"
-id="mobile-menu">
+            <div class="navbar__toggle" id="mobile-menu">
 
-<span class="bar"></span>
-<span class="bar"></span>
-<span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
 
-</div>
+            </div>
 
-<ul class="navbar__menu">
+            <ul class="navbar__menu">
 
-<li class="navbar__item">
-<a href="index.php"
-class="navbar__links">
-ホーム
-</a>
-</li>
+                <li class="navbar__item">
+                    <a href="index.php" class="navbar__links">
+                        ホーム
+                    </a>
+                </li>
 
-<li class="navbar__item">
-<a href="cprofile.php"
-class="navbar__links">
-会社概要
-</a>
-</li>
+                <li class="navbar__item">
+                    <a href="cprofile.php" class="navbar__links">
+                        会社概要
+                    </a>
+                </li>
 
-<li class="navbar__item">
-<a href="careers.php"
-class="navbar__links">
-システムの使い方
-</a>
-</li>
-    
-<li class="navbar__item">
-<a href="filemanager.php"
-class="navbar__links">
-ファイル管理
-</a>
-</li>
+                <li class="navbar__item">
+                    <a href="careers.php" class="navbar__links">
+                        システムの使い方
+                    </a>
+                </li>
 
-<li class="navbar__item">
-<a href="contact.php"
-class="navbar__links">
-お問い合わせ
-</a>
-</li>
+                <li class="navbar__item">
+                    <a href="filemanager.php" class="navbar__links">
+                        ファイル管理
+                    </a>
+                </li>
 
-<li class="navbar__item">
+                <li class="navbar__item">
+                    <a href="contact.php" class="navbar__links">
+                        お問い合わせ
+                    </a>
+                </li>
 
-<span class="navbar__links"
-style="color:#42b5f2;font-weight:bold;">
+                <li class="navbar__item">
 
-<i class="fa-solid fa-user"></i>
+                    <span class="navbar__links" style="color:#42b5f2;font-weight:bold;">
 
-<?php echo htmlspecialchars($username); ?> さん
+                        <i class="fa-solid fa-user"></i>
 
-</span>
+                        <?php echo htmlspecialchars($username); ?> さん
 
-</li>
+                    </span>
 
-<li class="navbar__btn">
+                </li>
 
-<a href="logout.php"
-class="button"
-style="background:#f44336;">
+                <li class="navbar__btn">
 
-ログアウト
+                    <a href="logout.php" class="button" style="background:#f44336;">
 
-</a>
+                        ログアウト
 
-</li>
+                    </a>
 
-</ul>
+                </li>
 
-</div>
+            </ul>
 
-</nav>
+        </div>
 
-<!-- ===========================
+    </nav>
+
+    <!-- ===========================
 MAIN LAYOUT
 =========================== -->
 
-<div class="drive-layout">
+    <div class="drive-layout">
 
-<!-- ===========================
+        <!-- ===========================
 SIDEBAR
 =========================== -->
 
-<aside class="sidebar">
+        <aside class="sidebar">
 
-<button class="upload-btn"
-onclick="document.getElementById('fileInput').click();">
+            <button class="upload-btn" onclick="document.getElementById('fileInput').click();">
 
-<i class="fa-solid fa-plus"></i>
+                <i class="fa-solid fa-plus"></i>
 
-New
+                New
 
-</button>
+            </button>
 
-<ul>
+            <ul>
 
-<li class="active">
+                <li class="active">
 
-<i class="fa-solid fa-folder"></i>
+                    <i class="fa-solid fa-folder"></i>
 
-My Files
+                    My Files
 
-</li>
+                </li>
 
-<li>
+                <li>
 
-<i class="fa-solid fa-users"></i>
+                    <i class="fa-solid fa-users"></i>
 
-Shared
+                    Shared
 
-</li>
+                </li>
 
-<li>
+                <li>
 
-<i class="fa-solid fa-clock"></i>
+                    <i class="fa-solid fa-clock"></i>
 
-Recent
+                    Recent
 
-</li>
+                </li>
 
-<li>
+                <li>
 
-<i class="fa-solid fa-box-archive"></i>
+                    <i class="fa-solid fa-box-archive"></i>
 
-Archive
+                    Archive
 
-</li>
+                </li>
 
-<li>
+                <li>
 
-<i class="fa-solid fa-trash"></i>
+                    <i class="fa-solid fa-trash"></i>
 
-Trash
+                    Trash
 
-</li>
+                </li>
 
-</ul>
+            </ul>
 
-</aside>
+        </aside>
 
-<!-- ===========================
+        <!-- ===========================
 CONTENT
 =========================== -->
 
-<main class="content">
+        <main class="content">
 
-<!-- Toolbar -->
+            <!-- Toolbar -->
 
-<div class="toolbar">
+            <div class="toolbar">
 
-<div class="search">
+                <div class="search">
 
-<i class="fa-solid fa-magnifying-glass"></i>
+                    <i class="fa-solid fa-magnifying-glass"></i>
 
-<input
-type="text"
-id="searchInput"
-placeholder="Search files...">
+                    <input type="text" id="searchInput" placeholder="Search files...">
 
-</div>
+                </div>
 
-<div class="view-buttons">
+                <div class="view-buttons">
 
-<button id="gridView">
+                    <button id="gridView">
 
-<i class="fa-solid fa-table-cells-large"></i>
+                        <i class="fa-solid fa-table-cells-large"></i>
 
-</button>
+                    </button>
 
-<button id="listView">
+                    <button id="listView">
 
-<i class="fa-solid fa-list"></i>
+                        <i class="fa-solid fa-list"></i>
 
-</button>
+                    </button>
 
-</div>
+                </div>
 
-</div>
+            </div>
 
-<!-- ===========================
+            <!-- ===========================
 UPLOAD FORM
 =========================== -->
 
-<form
-    id="uploadForm"
-    action="upload.php"
-    method="POST"
-    enctype="multipart/form-data">
+            <form id="uploadForm" action="upload.php" method="POST" enctype="multipart/form-data">
 
-    <input
-        type="file"
-        id="fileInput"
-        name="uploaded_file[]"
-        multiple
-        hidden>
-      
+                <input type="file" id="fileInput" name="uploaded_file[]" multiple hidden>
 
-</form>
 
-<!-- ===========================
+            </form>
+
+            <!-- ===========================
 DRAG & DROP
 =========================== -->
 
-<div
-id="dropZone"
-class="drop-zone">
+            <div id="dropZone" class="drop-zone">
 
-<i class="fa-solid fa-cloud-arrow-up"></i>
+                <i class="fa-solid fa-cloud-arrow-up"></i>
 
-<h2>Drag & Drop Files Here</h2>
+                <h2>Drag & Drop Files Here</h2>
 
-<p>or click <strong>New</strong> to upload.</p>
+                <p>or click <strong>New</strong> to upload.</p>
 
-</div>
-    
-<!-- ===========================
+            </div>
+
+            <!-- ===========================
 GRID VIEW
 =========================== -->
 
-<div id="gridContainer" class="grid-view active">
+            <div id="gridContainer" class="grid-view active">
 
-<?php
+                <?php
 
-if(count($files) == 0){
+                if (mysqli_num_rows($result) == 0) {
 
-    echo "<h3>No files uploaded.</h3>";
+                    echo "<h3>No files uploaded.</h3>";
 
-}else{
+                } else {
 
-    foreach($files as $file){
+                    while ($row = mysqli_fetch_assoc($result)) {
 
-        if($file == ".htaccess") continue;
+                        $file = $row['filename'];
 
-        $filePath = $uploadDir . $file;
+                        $filePath = $uploadDir . $file;
 
-        $size = round(filesize($filePath)/1024,2) . " KB";
+                        if (!file_exists($filePath)) {
+                            continue;
+                        }
 
-		$date = date("Y-m-d H:i", filemtime($filePath));
+                        $size = round($row['filesize'] / 1024, 2) . " KB";
 
-        /* File Extension */
+                        $date = $row['upload_date'];
 
-        $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                        $owner = $row['owner'];
 
-        /* Default Icon */
+                        $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 
-        $icon = "fa-file";
-        $iconClass = "";
+                        // your existing switch($extension) stays here...
+                
+                        /* Default Icon */
 
-        switch($extension){
+                        $icon = "fa-file";
+                        $iconClass = "";
 
-            case "pdf":
-                $icon = "fa-file-pdf";
-                $iconClass = "fa-file-pdf";
-                break;
+                        switch ($extension) {
 
-            case "doc":
-            case "docx":
-                $icon = "fa-file-word";
-                $iconClass = "fa-file-word";
-                break;
+                            case "pdf":
+                                $icon = "fa-file-pdf";
+                                $iconClass = "fa-file-pdf";
+                                break;
 
-            case "xls":
-            case "xlsx":
-            case "csv":
-                $icon = "fa-file-excel";
-                $iconClass = "fa-file-excel";
-                break;
+                            case "doc":
+                            case "docx":
+                                $icon = "fa-file-word";
+                                $iconClass = "fa-file-word";
+                                break;
 
-            case "png":
-            case "jpg":
-            case "jpeg":
-            case "gif":
-            case "webp":
-                $icon = "fa-file-image";
-                $iconClass = "fa-file-image";
-                break;
+                            case "xls":
+                            case "xlsx":
+                            case "csv":
+                                $icon = "fa-file-excel";
+                                $iconClass = "fa-file-excel";
+                                break;
 
-            case "zip":
-            case "rar":
-            case "7z":
-                $icon = "fa-file-zipper";
-                $iconClass = "fa-file-zipper";
-                break;
+                            case "png":
+                            case "jpg":
+                            case "jpeg":
+                            case "gif":
+                            case "webp":
+                                $icon = "fa-file-image";
+                                $iconClass = "fa-file-image";
+                                break;
 
-            case "ppt":
-            case "pptx":
-                $icon = "fa-file-powerpoint";
-                break;
+                            case "zip":
+                            case "rar":
+                            case "7z":
+                                $icon = "fa-file-zipper";
+                                $iconClass = "fa-file-zipper";
+                                break;
 
-            case "mp4":
-            case "avi":
-            case "mov":
-                $icon = "fa-file-video";
-                break;
+                            case "ppt":
+                            case "pptx":
+                                $icon = "fa-file-powerpoint";
+                                break;
 
-            case "mp3":
-            case "wav":
-                $icon = "fa-file-audio";
-                break;
+                            case "mp4":
+                            case "avi":
+                            case "mov":
+                                $icon = "fa-file-video";
+                                break;
 
-            case "php":
-            case "html":
-            case "css":
-            case "js":
-                $icon = "fa-file-code";
-                break;
+                            case "mp3":
+                            case "wav":
+                                $icon = "fa-file-audio";
+                                break;
 
-        }
+                            case "php":
+                            case "html":
+                            case "css":
+                            case "js":
+                                $icon = "fa-file-code";
+                                break;
 
-?>
+                        }
 
-<div class="file-card"
-     data-name="<?php echo strtolower($file); ?>">
+                        ?>
 
-<i class="fa-regular <?php echo $icon; ?> <?php echo $iconClass; ?>"></i>
+                        <div class="file-card" data-name="<?php echo strtolower($file); ?>">
 
-<h3>
+                            <i class="fa-regular <?php echo $icon; ?> <?php echo $iconClass; ?>"></i>
 
-<?php echo htmlspecialchars($file); ?>
+                            <h3>
 
-</h3>
+                                <?php echo htmlspecialchars($file); ?>
 
-<p>
-<i class="fa-solid fa-calendar"></i>
-<?php echo date("Y-m-d H:i", filemtime($filePath)); ?>
-</p>
+                            </h3>
 
-<p>
+                            <p>
+                                <i class="fa-solid fa-user"></i>
+                                <?php echo htmlspecialchars($owner); ?>
+                            </p>
 
-<i class="fa-solid fa-hard-drive"></i>
+                            <p>
+                                <i class="fa-solid fa-calendar"></i> <?php echo date("Y-m-d H:i", strtotime($date)); ?>
+                            </p>
 
-<?php echo $size; ?>
+                            <p>
 
-</p>
+                                <i class="fa-solid fa-hard-drive"></i>
 
-<div class="card-buttons">
+                                <?php echo $size; ?>
 
-<a
-href="download.php?file=<?php echo urlencode($file); ?>"
-class="btn-download">
+                            </p>
 
-<i class="fa-solid fa-download"></i>
+                            <div class="card-buttons">
 
-Download
+                                <a href="download.php?file=<?php echo urlencode($file); ?>" class="btn-download">
 
-</a>
+                                    <i class="fa-solid fa-download"></i>
 
-<a
-href="delete.php?file=<?php echo urlencode($file); ?>"
-class="btn-delete"
-onclick="return confirm('Delete this file?');">
+                                    Download
 
-<i class="fa-solid fa-trash"></i>
+                                </a>
 
-Delete
+                                <button class="btn-share" onclick="openShareModal(<?php echo $row['id']; ?>,
+                                '<?php echo htmlspecialchars($file, ENT_QUOTES); ?>')">
 
-</a>
+                                    <i class="fa-solid fa-share-nodes"></i>
 
-</div>
+                                    Share
 
-</div>
+                                </button>
 
-<?php
+                                <a href="delete.php?file=<?php echo urlencode($file); ?>" class="btn-delete"
+                                    onclick="return confirm('Delete this file?');">
 
-    }
+                                    <i class="fa-solid fa-trash"></i>
 
-}
+                                    Delete
 
-?>
+                                </a>
 
-</div>
-    
-<!-- ===========================
+                            </div>
+
+                        </div>
+
+                        <?php
+
+                    }
+
+                }
+
+                ?>
+
+            </div>
+
+            <!-- ===========================
 LIST VIEW
 =========================== -->
 
-<table class="file-table" id="listContainer">
+            <table class="file-table" id="listContainer">
 
-<thead>
+                <thead>
 
-<tr>
+                    <tr>
 
-<th>File Name</th>
+                        <th>File Name</th>
 
-<th>Size</th>
+                        <th>Size</th>
 
-<th>Last Modified</th>
+                        <th>Last Modified</th>
 
-<th>Actions</th>
+                        <th>Actions</th>
 
-</tr>
+                    </tr>
 
-</thead>
+                </thead>
 
-<tbody>
+                <tbody>
 
-<?php
+                    <?php
 
-foreach($files as $file){
+                    // Run the query again because the first result set
+// was already used by the Grid View.
+                    include "database.php";
 
-    if($file == ".htaccess") continue;
+                    $stmt = mysqli_prepare(
+                        $conn,
+                        "SELECT * FROM files
+                         WHERE owner = ?
+                         ORDER BY upload_date DESC"
+                    );
 
-    $filePath = $uploadDir.$file;
+                    mysqli_stmt_bind_param(
+                        $stmt,
+                        "s",
+                        $username
+                    );
 
-    $size = round(filesize($filePath)/1024,2)." KB";
+                    mysqli_stmt_execute($stmt);
 
-    $date = $metadata[$file]['date'] ??
-            date("Y-m-d H:i", filemtime($filePath));
+                    $result = mysqli_stmt_get_result($stmt);
 
-?>
+                    if (mysqli_num_rows($result) > 0) {
 
-<tr data-name="<?php echo strtolower($file); ?>">
+                        while ($row = mysqli_fetch_assoc($result)) {
 
-<td>
+                            $file = $row['filename'];
 
-<i class="fa-regular fa-file"></i>
+                            $filePath = $uploadDir . $file;
 
-<?php echo htmlspecialchars($file); ?>
+                            if (!file_exists($filePath)) {
+                                continue;
+                            }
 
-</td>
+                            $size = round($row['filesize'] / 1024, 2) . " KB";
 
-<td>
+                            $date = $row['upload_date'];
 
-<?php echo $size; ?>
+                            $owner = $row['owner'];
 
-</td>
+                            ?>
 
-<td>
+                            <tr data-name="<?php echo strtolower($file); ?>">
 
-<?php echo $date; ?>
+                                <td>
+                                    <i class="fa-regular fa-file"></i>
+                                    <?php echo htmlspecialchars($file); ?>
+                                </td>
 
-</td>
+                                <td>
+                                    <?php echo htmlspecialchars($owner); ?>
+                                </td>
 
-<td>
+                                <td>
+                                    <?php echo $size; ?>
+                                </td>
 
-<a
-href="download.php?file=<?php echo urlencode($file); ?>"
-class="btn-download">
+                                <td>
+                                    <?php echo date("Y-m-d H:i", strtotime($date)); ?>
+                                </td>
 
-<i class="fa-solid fa-download"></i>
+                                <td>
 
-Download
+                                    <a href="download.php?file=<?php echo urlencode($file); ?>" class="btn-download">
 
-</a>
+                                        <i class="fa-solid fa-download"></i>
 
-<a
-href="delete.php?file=<?php echo urlencode($file); ?>"
-class="btn-delete"
-onclick="return confirm('このファイルを削除しますか？?');">
+                                        Download
 
-<i class="fa-solid fa-trash"></i>
+                                    </a>
 
-Delete
+                                    <a href="delete.php?file=<?php echo urlencode($file); ?>" class="btn-delete"
+                                        onclick="return confirm('このファイルを削除しますか？');">
 
-</a>
+                                        <i class="fa-solid fa-trash"></i>
 
-</td>
+                                        Delete
 
-</tr>
+                                    </a>
 
-<?php
+                                </td>
 
-}
+                            </tr>
 
-?>
+                            <?php
 
-</tbody>
+                        }
 
-</table>
+                    } else {
 
-</main>
+                        ?>
 
-</div>
+                        <tr>
+                            <td colspan="5" style="text-align:center;">
+                                No files uploaded.
+                            </td>
+                        </tr>
 
-<script src="app.js"></script>
-<script src="filemanager.js"></script>
+                        <?php
+
+                    }
+
+                    ?>
+
+                </tbody>
+
+            </table>
+
+        </main>
+
+    </div>
+
+    <div id="shareModal" class="share-modal" style="display:none;">
+
+        <div class="share-box">
+
+            <h2>Share File</h2>
+
+            <p id="shareFileName"></p>
+
+            <input type="hidden" id="shareFileId">
+
+            <input type="text" id="shareUsername" placeholder="Enter username">
+
+            <br><br>
+
+            <button onclick="shareFile()">
+
+                Share
+
+            </button>
+
+            <button onclick="closeShareModal()">
+
+                Cancel
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <script src="app.js"></script>
+    <script src="js/filemanager.js"></script>
 
 </body>
 

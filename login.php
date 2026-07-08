@@ -3,7 +3,7 @@
 session_start();
 
 // 1. Connect to XAMPP MySQL Database 
-if ($_SERVER['HTTP_HOST'] ==  'localhost' || $_SERVER['SERVER_ADDR'] == '127.0.0.1') {
+if ($_SERVER['HTTP_HOST'] == 'localhost' || $_SERVER['SERVER_ADDR'] == '127.0.0.1') {
     $conn = new mysqli("localhost", "root", "", "user", "3306");
 } else {
     //FREE LIVE HOST DATABASE

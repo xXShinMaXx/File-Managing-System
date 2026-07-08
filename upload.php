@@ -1,10 +1,18 @@
 <?php
 session_start();
 
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
+include "database.php";
+
 if (!isset($_SESSION['username'])) {
     http_response_code(401);
     exit("Unauthorized");
 }
+
+// FIX: Get the username from the session
+$username = $_SESSION['username'];
 
 $uploadDir = "uploads/";
 
@@ -13,20 +21,35 @@ if (!file_exists($uploadDir)) {
 }
 
 $allowed = [
-    "jpg","jpeg","png","gif","webp",
+    "jpg",
+    "jpeg",
+    "png",
+    "gif",
+    "webp",
     "pdf",
-    "doc","docx",
-    "xls","xlsx",
-    "ppt","pptx",
+    "doc",
+    "docx",
+    "xls",
+    "xlsx",
+    "ppt",
+    "pptx",
     "txt",
     "csv",
-    "zip","rar","7z",
-    "mp3","wav",
-    "mp4","avi","mov",
-    "php","html","css","js"
+    "zip",
+    "rar",
+    "7z",
+    "mp3",
+    "wav",
+    "mp4",
+    "avi",
+    "mov",
+    "php",
+    "html",
+    "css",
+    "js"
 ];
 
-$maxSize = 20 * 1024 * 1024; //20MB
+$maxSize = 20 * 1024 * 1024; // 20MB
 
 if (!isset($_FILES['uploaded_file'])) {
     exit("No file selected.");
@@ -41,15 +64,15 @@ $fileNames = $_FILES['uploaded_file']['name'];
 if (!is_array($fileNames)) {
 
     $fileNames = [$_FILES['uploaded_file']['name']];
-    $tmpNames  = [$_FILES['uploaded_file']['tmp_name']];
-    $sizes     = [$_FILES['uploaded_file']['size']];
-    $errors    = [$_FILES['uploaded_file']['error']];
+    $tmpNames = [$_FILES['uploaded_file']['tmp_name']];
+    $sizes = [$_FILES['uploaded_file']['size']];
+    $errors = [$_FILES['uploaded_file']['error']];
 
 } else {
 
     $tmpNames = $_FILES['uploaded_file']['tmp_name'];
-    $sizes    = $_FILES['uploaded_file']['size'];
-    $errors   = $_FILES['uploaded_file']['error'];
+    $sizes = $_FILES['uploaded_file']['size'];
+    $errors = $_FILES['uploaded_file']['error'];
 
 }
 
@@ -77,12 +100,40 @@ foreach ($fileNames as $i => $originalName) {
 
     $destination = $uploadDir . $filename;
 
+    // Prevent duplicate filenames
     if (file_exists($destination)) {
         $filename = time() . "_" . $filename;
         $destination = $uploadDir . $filename;
     }
 
-    move_uploaded_file($tmpNames[$i], $destination);
+    if (move_uploaded_file($tmpNames[$i], $destination)) {
+
+        $stmt = mysqli_prepare(
+            $conn,
+            "INSERT INTO files (filename, owner, filesize, filetype)
+             VALUES (?, ?, ?, ?)"
+        );
+
+        // Show SQL error if prepare() fails
+        if (!$stmt) {
+            die("Prepare failed: " . mysqli_error($conn));
+        }
+
+        mysqli_stmt_bind_param(
+            $stmt,
+            "ssis",
+            $filename,
+            $username,
+            $sizes[$i],
+            $extension
+        );
+
+        if (!mysqli_stmt_execute($stmt)) {
+            die("Execute failed: " . mysqli_stmt_error($stmt));
+        }
+
+        mysqli_stmt_close($stmt);
+    }
 }
 
 echo "success";
